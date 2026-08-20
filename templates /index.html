@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VulnScan Pro — Security Assessment Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f8fafc;color:#1e293b;font-family:'Inter',sans-serif;min-height:100vh}
+
+/* NAVBAR */
+.nav{background:#fff;border-bottom:1px solid #e2e8f0;padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;color:#0f172a}
+.nav-logo .shield{width:32px;height:32px;background:linear-gradient(135deg,#ef4444,#b91c1c);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:16px}
+.nav-badge{background:#fef2f2;color:#ef4444;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;border:1px solid #fecaca}
+.nav-status{display:flex;align-items:center;gap:6px;font-size:13px;color:#64748b}
+.status-dot{width:8px;height:8px;background:#22c55e;border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#0f172a 100%);padding:60px 32px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.hero h1{font-size:36px;font-weight:700;color:#fff;margin-bottom:12px;position:relative}
+.hero h1 span{color:#ef4444}
+.hero p{color:#94a3b8;font-size:15px;position:relative;max-width:500px;margin:0 auto}
+
+/* SCAN BOX */
+.scan-section{max-width:900px;margin:-30px auto 0;padding:0 20px;position:relative;z-index:10}
+.scan-card{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.15);padding:28px}
+.scan-input-row{display:flex;gap:12px;margin-bottom:16px}
+.scan-input{flex:1;border:2px solid #e2e8f0;border-radius:10px;padding:14px 18px;font-size:15px;font-family:'Inter',sans-serif;outline:none;color:#1e293b;transition:border 0.2s}
+.scan-input:focus{border-color:#ef4444}
+.scan-input::placeholder{color:#94a3b8}
+.scan-btn{padding:14px 28px;background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;white-space:nowrap}
+.scan-btn:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(239,68,68,0.4)}
+.scan-btn:disabled{opacity:0.6;transform:none;cursor:not-allowed}
+.quick-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.quick-lbl{font-size:12px;color:#94a3b8;font-weight:500}
+.quick-chip{padding:6px 14px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:99px;font-size:12px;color:#475569;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif}
+.quick-chip:hover{background:#fef2f2;border-color:#fecaca;color:#ef4444}
+
+/* STATS */
+.stats-section{max-width:900px;margin:24px auto;padding:0 20px}
+.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+@media(max-width:600px){.stats-grid{grid-template-columns:repeat(3,1fr)}}
+.stat-card{background:#fff;border-radius:12px;padding:16px;text-align:center;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.stat-card.critical{border-top:3px solid #ef4444}
+.stat-card.high{border-top:3px solid #f97316}
+.stat-card.medium{border-top:3px solid #eab308}
+.stat-card.low{border-top:3px solid #3b82f6}
+.stat-card.pass{border-top:3px solid #22c55e}
+.stat-num{font-size:28px;font-weight:700;margin-bottom:4px}
+.stat-num.critical{color:#ef4444}
+.stat-num.high{color:#f97316}
+.stat-num.medium{color:#eab308}
+.stat-num.low{color:#3b82f6}
+.stat-num.pass{color:#22c55e}
+.stat-lbl{font-size:11px;color:#94a3b8;font-weight:600;letter-spacing:0.5px;text-transform:uppercase}
+
+/* RESULTS */
+.results-section{max-width:900px;margin:0 auto 40px;padding:0 20px}
+.result-hidden{display:none}
+.result-header{background:#fff;border-radius:16px;padding:24px;margin-bottom:16px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,0.05);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.target-info h3{font-size:16px;font-weight:600;color:#1e293b;margin-bottom:4px}
+.target-info p{font-size:13px;color:#94a3b8}
+.risk-pill{padding:10px 24px;border-radius:99px;font-size:15px;font-weight:700;letter-spacing:1px}
+.risk-CRITICAL{background:#fef2f2;color:#ef4444;border:2px solid #fecaca}
+.risk-HIGH{background:#fff7ed;color:#f97316;border:2px solid #fed7aa}
+.risk-MEDIUM{background:#fefce8;color:#ca8a04;border:2px solid #fef08a}
+.risk-LOW{background:#f0fdf4;color:#16a34a;border:2px solid #bbf7d0}
+.score-section{flex:1;min-width:200px}
+.score-lbl{font-size:12px;color:#94a3b8;font-weight:500;margin-bottom:8px}
+.score-track{background:#f1f5f9;height:8px;border-radius:99px;overflow:hidden}
+.score-fill{height:100%;border-radius:99px;transition:width 1s ease}
+
+/* CATEGORIES */
+.category-card{background:#fff;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.cat-header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:1px solid #f1f5f9}
+.cat-header:hover{background:#f8fafc}
+.cat-title{font-size:14px;font-weight:600;color:#1e293b;display:flex;align-items:center;gap:8px}
+.cat-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.cat-badges{display:flex;gap:6px;align-items:center}
+.pill{padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600}
+.pill-fail{background:#fef2f2;color:#ef4444}
+.pill-pass{background:#f0fdf4;color:#16a34a}
+.pill-warn{background:#fffbeb;color:#d97706}
+.cat-body{padding:8px 20px 12px}
+
+/* CHECK ITEMS */
+.check-row{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #f8fafc}
+.check-row:last-child{border:none}
+.check-status{width:52px;text-align:center;flex-shrink:0}
+.status-chip{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.chip-FAIL{background:#fef2f2;color:#ef4444}
+.chip-PASS{background:#f0fdf4;color:#16a34a}
+.chip-WARN{background:#fffbeb;color:#d97706}
+.chip-SKIP{background:#f1f5f9;color:#94a3b8}
+.chip-INFO{background:#f1f5f9;color:#64748b}
+.check-info{flex:1}
+.check-name{font-size:13px;font-weight:500;color:#1e293b;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+.check-detail{font-size:12px;color:#64748b}
+.sev-tag{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}
+.tag-CRITICAL{background:#fef2f2;color:#ef4444}
+.tag-HIGH{background:#fff7ed;color:#f97316}
+.tag-MEDIUM{background:#fefce8;color:#ca8a04}
+.tag-LOW{background:#eff6ff;color:#3b82f6}
+.tag-INFO{background:#f1f5f9;color:#94a3b8}
+
+/* LOADING */
+.loading-card{background:#fff;border-radius:16px;padding:48px;text-align:center;border:1px solid #e2e8f0}
+.loading-spinner{width:48px;height:48px;border:4px solid #f1f5f9;border-top-color:#ef4444;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-title{font-size:18px;font-weight:600;color:#1e293b;margin-bottom:8px}
+.loading-sub{font-size:14px;color:#94a3b8;margin-bottom:20px}
+.loading-steps{display:flex;flex-direction:column;gap:8px;max-width:300px;margin:0 auto}
+.loading-step{display:flex;align-items:center;gap:10px;font-size:13px;color:#64748b;opacity:0;animation:fadeIn 0.5s forwards}
+.loading-step:nth-child(1){animation-delay:0.5s}
+.loading-step:nth-child(2){animation-delay:1.5s}
+.loading-step:nth-child(3){animation-delay:2.5s}
+.loading-step:nth-child(4){animation-delay:3.5s}
+@keyframes fadeIn{to{opacity:1}}
+.step-dot{width:8px;height:8px;background:#ef4444;border-radius:50%;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="shield">🛡</div>
+    VulnScan Pro
+  </div>
+  <div class="nav-badge">Security Assessment Tool</div>
+  <div class="nav-status">
+    <div class="status-dot"></div>
+    Scanner Ready
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>Find Vulnerabilities <span>Before Hackers Do</span></h1>
+  <p>Automated security assessment — headers, SSL, ports, sensitive paths and more</p>
+</div>
+
+<div class="scan-section">
+  <div class="scan-card">
+    <div class="scan-input-row">
+      <input class="scan-input" id="target"
+        placeholder="Enter target URL e.g. https://example.com"/>
+      <button class="scan-btn" id="scan-btn"
+        onclick="startScan()">Scan Now →</button>
+    </div>
+    <div class="quick-row">
+      <span class="quick-lbl">Quick test:</span>
+      <button class="quick-chip" onclick="quickScan('https://google.com')">google.com</button>
+      <button class="quick-chip" onclick="quickScan('https://github.com')">github.com</button>
+      <button class="quick-chip" onclick="quickScan('https://example.com')">example.com</button>
+      <button class="quick-chip" onclick="quickScan('http://testphp.vulnweb.com')">vulnweb (test target)</button>
+    </div>
+  </div>
+</div>
+
+<div class="stats-section">
+  <div class="stats-grid">
+    <div class="stat-card critical"><div class="stat-num critical" id="n-crit">0</div><div class="stat-lbl">Critical</div></div>
+    <div class="stat-card high"><div class="stat-num high" id="n-high">0</div><div class="stat-lbl">High</div></div>
+    <div class="stat-card medium"><div class="stat-num medium" id="n-med">0</div><div class="stat-lbl">Medium</div></div>
+    <div class="stat-card low"><div class="stat-num low" id="n-low">0</div><div class="stat-lbl">Low</div></div>
+    <div class="stat-card pass"><div class="stat-num pass" id="n-pass">0</div><div class="stat-lbl">Passed</div></div>
+  </div>
+</div>
+
+<div class="results-section">
+  <div id="result" class="result-hidden"></div>
+</div>
+
+<script>
+function quickScan(url) {
+  document.getElementById('target').value = url;
+  startScan();
+}
+
+const catIcons = {
+  'Security Headers': '🔒',
+  'Server Information': '🖥️',
+  'SSL/TLS': '🔐',
+  'Cookies': '🍪',
+  'CORS': '🌐',
+  'Port Scan': '📡',
+  'Sensitive Paths': '📁'
+};
+
+async function startScan() {
+  const target = document.getElementById('target').value.trim();
+  if (!target) return;
+  const btn = document.getElementById('scan-btn');
+  btn.disabled = true;
+  btn.textContent = 'Scanning...';
+
+  const el = document.getElementById('result');
+  el.className = '';
+  el.innerHTML = `
+    <div class="loading-card">
+      <div class="loading-spinner"></div>
+      <div class="loading-title">Scanning ${target}</div>
+      <div class="loading-sub">Running security assessment...</div>
+      <div class="loading-steps">
+        <div class="loading-step"><div class="step-dot"></div>Checking security headers</div>
+        <div class="loading-step"><div class="step-dot"></div>Validating SSL certificate</div>
+        <div class="loading-step"><div class="step-dot"></div>Scanning open ports</div>
+        <div class="loading-step"><div class="step-dot"></div>Testing sensitive paths</div>
+      </div>
+    </div>`;
+
+  try {
+    const res = await fetch('/api/scan', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({target})
+    });
+    const d = await res.json();
+
+    if (d.error) {
+      el.innerHTML = `<div class="loading-card" style="color:#ef4444">
+        <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+        <div style="font-size:16px;font-weight:600">Scan Failed</div>
+        <div style="font-size:13px;color:#94a3b8;margin-top:8px">${d.error}</div>
+      </div>`;
+      btn.disabled = false;
+      btn.textContent = 'Scan Now →';
+      return;
+    }
+
+    document.getElementById('n-crit').textContent = d.summary.critical;
+    document.getElementById('n-high').textContent = d.summary.high;
+    document.getElementById('n-med').textContent = d.summary.medium;
+    document.getElementById('n-low').textContent = d.summary.low;
+    document.getElementById('n-pass').textContent = d.summary.pass;
+
+    const barColor = d.risk_level==='CRITICAL'?'#ef4444':
+                     d.risk_level==='HIGH'?'#f97316':
+                     d.risk_level==='MEDIUM'?'#eab308':'#22c55e';
+
+    let html = `
+      <div class="result-header">
+        <div class="target-info">
+          <h3>${d.hostname}</h3>
+          <p>Scanned ${d.timestamp}</p>
+        </div>
+        <div class="score-section">
+          <div class="score-lbl">Risk Score: ${d.risk_score}/100</div>
+          <div class="score-track">
+            <div class="score-fill" id="sbar"
+              style="width:0%;background:${barColor}"></div>
+          </div>
+        </div>
+        <div class="risk-pill risk-${d.risk_level}">${d.risk_level}</div>
+      </div>`;
+
+    for (const [category, checks] of Object.entries(d.categories)) {
+      const fails = checks.filter(c=>c.status==='FAIL').length;
+      const passes = checks.filter(c=>c.status==='PASS').length;
+      const warns = checks.filter(c=>c.status==='WARN').length;
+      const icon = catIcons[category] || '🔍';
+
+      html += `<div class="category-card">
+        <div class="cat-header">
+          <div class="cat-title">
+            <div class="cat-icon" style="background:#f1f5f9">${icon}</div>
+            ${category}
+          </div>
+          <div class="cat-badges">
+            ${fails?`<span class="pill pill-fail">${fails} issue${fails>1?'s':''}</span>`:''}
+            ${warns?`<span class="pill pill-warn">${warns} warning${warns>1?'s':''}</span>`:''}
+            ${passes?`<span class="pill pill-pass">${passes} passed</span>`:''}
+          </div>
+        </div>
+        <div class="cat-body">`;
+
+      checks.forEach(check => {
+        html += `<div class="check-row">
+          <div class="check-status">
+            <span class="status-chip chip-${check.status}">${check.status}</span>
+          </div>
+          <div class="check-info">
+            <div class="check-name">
+              ${check.check}
+              <span class="sev-tag tag-${check.severity}">${check.severity}</span>
+            </div>
+            <div class="check-detail">${check.detail}</div>
+          </div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    }
+
+    el.innerHTML = html;
+    setTimeout(()=>{
+      const bar = document.getElementById('sbar');
+      if(bar) bar.style.width = d.risk_score + '%';
+    }, 300);
+
+  } catch(e) {
+    el.innerHTML = `<div class="loading-card">
+      <div style="color:#ef4444;font-size:14px">Connection error: ${e.message}</div>
+    </div>`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Scan Now →';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('target').addEventListener(
+    'keydown', e => { if(e.key==='Enter') startScan(); });
+});
+</script>
+</body>
+</html>
